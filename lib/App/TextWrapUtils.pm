@@ -52,7 +52,7 @@ _
         # XXX arg: pass per-backend options
         backend => {
             schema => ['perl::modname*', in=>\@BACKENDS],
-            default => 'Text::Wrap',
+            default => 'Text::ANSI::Util',
         },
     },
 };
