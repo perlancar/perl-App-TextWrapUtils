@@ -71,7 +71,7 @@ sub textwrap {
     my $text = File::Slurper::Dash::read_text($args{filename});
     $text =~ s/\R/ /;
 
-    my $backend = $args{backend} // 'Text::Wrap';
+    my $backend = $args{backend} // 'Text::ANSI::Util';
     my $width = $args{width} // 80;
 
     log_trace "Using text wrapping backend %s", $backend;
@@ -149,6 +149,6 @@ Keywords: fold.
 
 =head1 SEE ALSO
 
-L<Text::Wrap> and other backends.
+L<Text::Wrap>, L<Text::ANSI::Util> and other backends.
 
 =cut
