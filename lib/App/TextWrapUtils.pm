@@ -5,6 +5,8 @@ use strict;
 use warnings;
 use Log::ger;
 
+use Clipboard::Any ();
+
 # AUTHORITY
 # DATE
 # DIST
@@ -42,6 +44,14 @@ our %argspecopt_backend = (
     },
 );
 
+our %argspecopt_width = (
+    width => {
+        schema => 'posint*',
+        default => 80,
+        cmdline_aliases => {w=>{}},
+    },
+);
+
 $SPEC{textwrap} = {
     v => 1.1,
     summary => 'Wrap (fold) paragraphs in text using one of several Perl modules',
@@ -62,14 +72,21 @@ _
         # XXX arg: subsequent indent string/number of spaces?
         # XXX arg: option to not wrap verbatim paragraphs
         # XXX arg: pass per-backend options
+
+        # internal: _text (pass text directly)
     },
 };
 sub textwrap {
     require File::Slurper::Dash;
 
     my %args = @_;
-    my $text = File::Slurper::Dash::read_text($args{filename});
-    $text =~ s/\R/ /;
+    my $text;
+    if (defined $args{_text}) {
+        $text = $args{_text};
+    } else {
+        $text = File::Slurper::Dash::read_text($args{filename});
+        $text =~ s/\R/ /;
+    }
 
     my $backend = $args{backend} // 'Text::ANSI::Util';
     my $width = $args{width} // 80;
@@ -115,6 +132,46 @@ sub textwrap {
     [200, "OK", $res];
 }
 
+$SPEC{textwrap_clipboard} = {
+    v => 1.1,
+    summary => 'Wrap (fold) paragraphs in text in clipboard using one of several Perl modules',
+    description => <<'_',
+
+This is shortcut for something like:
+
+    % clipget | textwrap ... | clipadd
+
+where <prog:clipget> and <prog:clipadd> are utilities to get text from clipboard
+and set text of clipboard, respectively.
+
+_
+    args => {
+        %argspecopt_backend,
+        %argspecopt_width,
+        %Clipboard::Any::argspecopt_clipboard_manager,
+    },
+};
+sub textwrap_clipboard {
+    my %args = @_;
+    my $cm = delete $args{clipboard_manager};
+
+    my $res;
+    $res = Clipboard::Any::get_clipboard_content(clipboard_manager=>$cm);
+    return [500, "Can't get clipboard content: $res->[0] - $res->[1]"]
+        unless $res->[0] == 200;
+    my $text = $res->[2];
+
+    $res = textwrap(%args, _text => $text);
+    return $res unless $res->[0] == 200;
+    my $wrapped_text = $res->[2];
+
+    $res = Clipboard::Any::add_clipboard_content(clipboard_manager=>$cm, content=>$wrapped_text);
+    return [500, "Can't add clipboard content: $res->[0] - $res->[1]"]
+        unless $res->[0] == 200;
+
+    [200, "OK"];
+}
+
 $SPEC{textunwrap} = {
     v => 1.1,
     summary => 'Unwrap (unfold) multiline paragraphs to single-line ones',
@@ -133,6 +190,45 @@ _
 sub textunwrap {
     my %args = @_;
     textwrap(%args, width=>999_999);
+}
+
+$SPEC{textunwrap_clipboard} = {
+    v => 1.1,
+    summary => 'Unwrap (unfold) multiline paragraphs in clipboard to single-line ones',
+    description => <<'_',
+
+This is shortcut for something like:
+
+    % clipget | textunwrap ... | clipadd
+
+where <prog:clipget> and <prog:clipadd> are utilities to get text from clipboard
+and set text of clipboard, respectively.
+
+_
+    args => {
+        %argspecopt_backend,
+        %Clipboard::Any::argspecopt_clipboard_manager,
+    },
+};
+sub textunwrap_clipboard {
+    my %args = @_;
+    my $cm = delete $args{clipboard_manager};
+
+    my $res;
+    $res = Clipboard::Any::get_clipboard_content(clipboard_manager=>$cm);
+    return [500, "Can't get clipboard content: $res->[0] - $res->[1]"]
+        unless $res->[0] == 200;
+    my $text = $res->[2];
+
+    $res = textunwrap(%args, _text => $text);
+    return $res unless $res->[0] == 200;
+    my $unwrapped_text = $res->[2];
+
+    $res = Clipboard::Any::add_clipboard_content(clipboard_manager=>$cm, content=>$unwrapped_text);
+    return [500, "Can't add clipboard content: $res->[0] - $res->[1]"]
+        unless $res->[0] == 200;
+
+    [200, "OK"];
 }
 
 1;
