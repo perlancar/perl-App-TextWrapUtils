@@ -22,25 +22,37 @@ our @BACKENDS = qw(
                       Text::Wrap
               );
 
+our %argspecopt0_filename = (
+    filename => {
+        schema => 'filename*',
+        default => '-',
+        pos => 0,
+        description => <<'_',
+
+Use dash (`-`) to read from stdin.
+
+_
+    },
+);
+
+our %argspecopt_backend = (
+    backend => {
+        schema => ['perl::modname*', in=>\@BACKENDS],
+        default => 'Text::ANSI::Util',
+    },
+);
+
 $SPEC{textwrap} = {
     v => 1.1,
-    summary => 'Wrap (fold) text using one of several Perl modules',
+    summary => 'Wrap (fold) paragraphs in text using one of several Perl modules',
     description => <<'_',
 
 Paragraphs are separated with two or more blank lines.
 
 _
     args => {
-        filename => {
-            schema => 'filename*',
-            default => '-',
-            pos => 0,
-            description => <<'_',
-
-Use dash (`-`) to read from stdin.
-
-_
-        },
+        %argspecopt0_filename,
+        %argspecopt_backend,
         width => {
             schema => 'posint*',
             default => 80,
@@ -50,10 +62,6 @@ _
         # XXX arg: subsequent indent string/number of spaces?
         # XXX arg: option to not wrap verbatim paragraphs
         # XXX arg: pass per-backend options
-        backend => {
-            schema => ['perl::modname*', in=>\@BACKENDS],
-            default => 'Text::ANSI::Util',
-        },
     },
 };
 sub textwrap {
@@ -105,6 +113,26 @@ sub textwrap {
         $res .= $para_text . ($blank_lines // "");
     }
     [200, "OK", $res];
+}
+
+$SPEC{textunwrap} = {
+    v => 1.1,
+    summary => 'Unwrap (unfold) multiline paragraphs to single-line ones',
+    description => <<'_',
+
+This is a shortcut for:
+
+    % textwrap -w 999999
+
+_
+    args => {
+        %argspecopt0_filename,
+        %argspecopt_backend,
+    },
+};
+sub textunwrap {
+    my %args = @_;
+    textwrap(%args, width=>999_999);
 }
 
 1;
