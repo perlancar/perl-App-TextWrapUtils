@@ -101,8 +101,10 @@ sub textwrap {
 
         if ($backend eq 'Text::ANSI::Fold') {
             require Text::ANSI::Fold;
-            $para_text = join("", map {"$_\n"} Text::ANSI::Fold->new(width=>$width)->text($para_text)->chops);
-            $para_text =~ s/\R\z//;
+            state $fold = Text::ANSI::Fold->new(width => $width,
+                                                boundary => 'word',
+                                                linebreak => &Text::ANSI::Fold::LINEBREAK_ALL);
+            $para_text = join("\n", $fold->text($para_text)->chops);
         } elsif ($backend eq 'Text::ANSI::Util') {
             require Text::ANSI::Util;
             $para_text = Text::ANSI::Util::ta_wrap($para_text, $width);
