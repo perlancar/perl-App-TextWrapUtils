@@ -41,6 +41,7 @@ our %argspecopt_backend = (
     backend => {
         schema => ['perl::modname*', in=>\@BACKENDS],
         default => 'Text::ANSI::Util',
+        cmdline_aliases => {b=>{}},
     },
 );
 
