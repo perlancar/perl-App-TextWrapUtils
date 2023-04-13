@@ -53,6 +53,13 @@ our %argspecopt_width = (
     },
 );
 
+our %argspecopt_tee = (
+    tee => {
+        summary => 'If set to true, will also print result to STDOUT',
+        schema => 'bool*',
+    },
+);
+
 $SPEC{textwrap} = {
     v => 1.1,
     summary => 'Wrap (fold) paragraphs in text using one of several Perl modules',
@@ -124,6 +131,7 @@ sub textwrap {
             $para_text = Text::WideChar::Util::mbwrap($para_text, $width);
         } elsif ($backend eq 'Text::Wrap') {
             require Text::Wrap;
+            no warnings 'once';
             local $Text::Wrap::columns = $width;
             $para_text = Text::Wrap::wrap('', '', $para_text);
         } else {
@@ -152,6 +160,7 @@ _
         %argspecopt_backend,
         %argspecopt_width,
         %Clipboard::Any::argspecopt_clipboard_manager,
+        %argspecopt_tee,
     },
 };
 sub textwrap_clipboard {
@@ -172,6 +181,7 @@ sub textwrap_clipboard {
     return [500, "Can't add clipboard content: $res->[0] - $res->[1]"]
         unless $res->[0] == 200;
 
+    print $wrapped_text if $args{tee};
     [200, "OK"];
 }
 
@@ -211,6 +221,7 @@ _
     args => {
         %argspecopt_backend,
         %Clipboard::Any::argspecopt_clipboard_manager,
+        %argspecopt_tee,
     },
 };
 sub textunwrap_clipboard {
@@ -231,6 +242,7 @@ sub textunwrap_clipboard {
     return [500, "Can't add clipboard content: $res->[0] - $res->[1]"]
         unless $res->[0] == 200;
 
+    print $unwrapped_text if $args{tee};
     [200, "OK"];
 }
 
