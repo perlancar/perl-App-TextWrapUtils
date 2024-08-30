@@ -63,11 +63,11 @@ our %argspecopt_tee = (
 $SPEC{textwrap} = {
     v => 1.1,
     summary => 'Wrap (fold) paragraphs in text using one of several Perl modules',
-    description => <<'_',
+    description => <<'MARKDOWN',
 
 Paragraphs are separated with two or more blank lines.
 
-_
+MARKDOWN
     args => {
         %argspecopt0_filename,
         %argspecopt_backend,
@@ -146,7 +146,7 @@ sub textwrap {
 $SPEC{textwrap_clipboard} = {
     v => 1.1,
     summary => 'Wrap (fold) paragraphs in text in clipboard using one of several Perl modules',
-    description => <<'_',
+    description => <<'MARKDOWN',
 
 This is shortcut for something like:
 
@@ -155,7 +155,7 @@ This is shortcut for something like:
 where <prog:clipget> and <prog:clipadd> are utilities to get text from clipboard
 and set text of clipboard, respectively.
 
-_
+MARKDOWN
     args => {
         %argspecopt_backend,
         %argspecopt_width,
@@ -188,13 +188,13 @@ sub textwrap_clipboard {
 $SPEC{textunwrap} = {
     v => 1.1,
     summary => 'Unwrap (unfold) multiline paragraphs to single-line ones',
-    description => <<'_',
+    description => <<'MARKDOWN',
 
 This is a shortcut for:
 
     % textwrap -w 999999
 
-_
+MARKDOWN
     args => {
         %argspecopt0_filename,
         %argspecopt_backend,
@@ -208,7 +208,7 @@ sub textunwrap {
 $SPEC{textunwrap_clipboard} = {
     v => 1.1,
     summary => 'Unwrap (unfold) multiline paragraphs in clipboard to single-line ones',
-    description => <<'_',
+    description => <<'MARKDOWN',
 
 This is shortcut for something like:
 
@@ -217,7 +217,7 @@ This is shortcut for something like:
 where <prog:clipget> and <prog:clipadd> are utilities to get text from clipboard
 and set text of clipboard, respectively.
 
-_
+MARKDOWN
     args => {
         %argspecopt_backend,
         %Clipboard::Any::argspecopt_clipboard_manager,
